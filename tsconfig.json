@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "jsx": "react",
+    "jsxFactory": "fw.dom",
+    "module": "es6",
+    "moduleResolution": "node",
+    "noImplicitAny": false,
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "outDir": "build",
+    "target": "es2016",
+    "typeRoots": [
+      "src/fw/JSX.d.ts"
+    ],
+    "lib": [
+      "es2015",
+      "es2016",
+      "dom"
+    ],
+    "downlevelIteration": true,
+    "allowJs": true
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "typeAcquisition": {
+    "enable": true
+  }
+}
