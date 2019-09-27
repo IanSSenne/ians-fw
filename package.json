@@ -1,40 +1,44 @@
 {
-  "name": "fw2",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "dependencies": {
-    "browserify": "^16.2.3",
-    "diff-dom": "^4.1.3",
-    "get-all-files": "^1.0.7",
-    "gulp-cli": "^2.2.0",
-    "gulp-closure-compiler": "^0.4.0",
-    "gulp-concat-util": "^0.5.5",
-    "gulp-optimize-js": "^1.1.0",
-    "gulp-run-command": "0.0.9",
-    "gulp-sourcemaps": "^2.6.5",
-    "gulp-uglify": "^3.0.2",
-    "rollup": "^1.15.5",
-    "tsify": "^4.0.1",
-    "uglify-es": "^3.3.9",
-    "vinyl-buffer": "^1.0.1",
-    "vinyl-source-stream": "^2.0.0"
-  },
-  "devDependencies": {
-    "fancy-log": "^1.3.3",
-    "gulp": "^4.0.0",
-    "gulp-typescript": "^5.0.1",
-    "typescript": "^3.5.2",
-    "watchify": "^3.11.1"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "gulp",
-    "rollup": "rollup build/project/index.js -f cjs -d dist",
-    "minify": "uglifyjs --compress --mangle toplevel=true --beautify beautify=false -o ./dist/index.min.js ./dist/index.js",
-    "minify-old": "jar ./closure-compiler-v20190528.jar --compilation_level ADVANCED_OPTIMIZATIONS --js ./dist/index.js --js_output_file ./dist/index.min.js"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+    "name": "ians-fw",
+    "version": "1.1.6",
+    "description": "ians-fw, my best attempt at creating a custom web framework",
+    "main": "build/index.js",
+    "module": "build/index.js",
+    "dependencies": {
+        "@babel/core": "^7.6.0",
+        "@babel/preset-env": "^7.6.0",
+        "express": "^4.17.1",
+        "fs": "0.0.1-security",
+        "path": "^0.12.7",
+        "rollup": "^1.21.4",
+        "rollup-plugin-babel": "^4.3.3",
+        "rollup-plugin-babel-minify": "^9.1.0",
+        "rollup-plugin-commonjs": "^10.1.0",
+        "rollup-plugin-filesize": "^6.2.0",
+        "rollup-plugin-multi-entry": "^2.1.0",
+        "rollup-plugin-node-resolve": "^5.2.0",
+        "rollup-plugin-progress": "^1.1.1",
+        "rollup-plugin-uglify": "^6.0.3",
+        "typescript": "^3.6.3"
+    },
+    "bin": {
+        "fw-script": "bin/fw-scripts.js"
+    },
+    "devDependencies": {
+        "gulp": "^4.0.0",
+        "gulp-cli": "^2.2.0",
+        "gulp-concat-util": "^0.5.5",
+        "gulp-run-command": "0.0.9",
+        "gulp-typescript": "^5.0.1",
+        "uglify-es": "^3.3.9"
+    },
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "build": "gulp",
+        "rollup": "rollup build/index.js -f esm --context this -d dist",
+        "minify": "uglifyjs --compress --mangle toplevel=true --beautify beautify=false -o ./dist/index.min.js ./dist/index.js"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC"
 }
