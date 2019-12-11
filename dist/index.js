@@ -62,9 +62,9 @@ if (!Array.prototype.fill)
         }
     });
 
-if (!Symbol) {
+if (!Symbol$1) {
     var CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0987654321!@#$%^&*()';
-    var Symbol = function (desc) {
+    var Symbol$1 = function (desc) {
         let arr = [];
         for (let i = 0; i < 128; i++) {
             arr.push(CHARS[Math.floor(Math.random() * CHARS.length)]);
@@ -73,10 +73,10 @@ if (!Symbol) {
     };
 }
 function $Symbol(description) {
-    return Symbol(description);
+    return Symbol$1(description);
 }
 $Symbol.$Symbol = function () {
-    return Symbol;
+    return Symbol$1;
 }.bind(window)();
 
 const isState = $Symbol();
@@ -159,55 +159,9 @@ function stateJoin(...parts) {
     return stateObj;
 }
 
-const instances = [];
-class verboseConstructor {
-    constructor() {
-        this.funcs = {
-            log: console.log.bind(console, '[fw2gulp LOG]'),
-            error: console.error.bind(console, '[fw2gulp ERR]'),
-            warn: console.warn.bind(console, '[fw2gulp WRN]')
-        };
-        this._enabled = false;
-        instances.push(this);
-    }
-    get enabled() {
-        return this._enabled;
-    }
-    set enabled(value) {
-        this._enabled = value;
-        instances.forEach(_ => (_._enabled = value));
-    }
-    log(...content) {
-        if (this._enabled)
-            this.funcs.log(...content);
-    }
-    error(...content) {
-        if (this._enabled)
-            this.funcs.error(...content);
-    }
-    warn(...content) {
-        if (this._enabled)
-            this.funcs.warn(...content);
-    }
-    createInternalInstance() {
-        return this.createInstance('fw2gulp INTERNAL ');
-    }
-    createInstance(type) {
-        let vc = new verboseConstructor();
-        vc.funcs.log = console.log.bind(console, `[${type}LOG]`);
-        vc.funcs.error = console.error.bind(console, `[${type}ERR]`);
-        vc.funcs.warn = console.warn.bind(console, `[${type}WRN]`);
-        return vc;
-    }
-}
-let verbose;
-var verbose$1 = (verbose = new verboseConstructor());
-Object.defineProperty(window || globalThis || new Function('this')(), 'FW2VERBOSE', { value: verbose });
-
 var requestIdleCallback;
 if (!requestIdleCallback)
     requestIdleCallback = requestAnimationFrame;
-const INTERNALVERBOSE = verbose$1.createInternalInstance();
 const rerender_queue = [];
 const rerenderCallbackOptions = { timeout: 500 };
 const rerenderCallbackHandler = requestIdleCallback || requestAnimationFrame;
@@ -290,10 +244,55 @@ class Component {
 }
 Component.prototype[isComponentConstructor] = true;
 
+const instances = [];
+class verboseConstructor {
+    constructor() {
+        this.funcs = {
+            log: console.log.bind(console, `%c ians-fw %c log %c `, 'background:#35495e ; padding: 1px; border-radius: 3px 0 0 3px;  color: #fff', `background: gray; padding: 1px; border-radius: 0 3px 3px 0;  color: #fff`, 'background:transparent'),
+            error: console.log.bind(console, `%c ians-fw %c error %c `, 'background:#35495e ; padding: 1px; border-radius: 3px 0 0 3px;  color: #fff', `background: rgb(190, 0, 0); padding: 1px; border-radius: 0 3px 3px 0;  color: #fff`, 'background:transparent'),
+            warn: console.log.bind(console, `%c ians-fw %c warn %c `, 'background:#35495e ; padding: 1px; border-radius: 3px 0 0 3px;  color: #fff', `background: rgb(207, 162, 0); padding: 1px; border-radius: 0 3px 3px 0;  color: #fff`, 'background:transparent')
+        };
+        this._enabled = false;
+        instances.push(this);
+    }
+    get enabled() {
+        return this._enabled;
+    }
+    set enabled(value) {
+        this._enabled = value;
+        instances.forEach(_ => (_._enabled = value));
+    }
+    log(...content) {
+        if (this._enabled)
+            this.funcs.log(...content);
+    }
+    error(...content) {
+        if (this._enabled)
+            this.funcs.error(...content);
+    }
+    warn(...content) {
+        if (this._enabled)
+            this.funcs.warn(...content);
+    }
+    createInternalInstance() {
+        return this.createInstance('fw2gulp INTERNAL ');
+    }
+    createInstance(type) {
+        let vc = new verboseConstructor();
+        vc.funcs = {
+            log: console.log.bind(console, `%c ${type} %c log %c `, 'background:#35495e ; padding: 1px; border-radius: 3px 0 0 3px;  color: #fff', `background: gray; padding: 1px; border-radius: 0 3px 3px 0;  color: #fff`, 'background:transparent'),
+            error: console.log.bind(console, `%c ${type} %c error %c `, 'background:#35495e ; padding: 1px; border-radius: 3px 0 0 3px;  color: #fff', `background: rgb(190, 0, 0); padding: 1px; border-radius: 0 3px 3px 0;  color: #fff`, 'background:transparent'),
+            warn: console.log.bind(console, `%c ${type} %c warn %c `, 'background:#35495e ; padding: 1px; border-radius: 3px 0 0 3px;  color: #fff', `background: rgb(207, 162, 0); padding: 1px; border-radius: 0 3px 3px 0;  color: #fff`, 'background:transparent')
+        };
+        return vc;
+    }
+}
+let verbose;
+var verbose$1 = (verbose = new verboseConstructor());
+Object.defineProperty(window || globalThis || new Function('this')(), 'FW2VERBOSE', { value: verbose });
+
 const production = false;
 
-const FWINTERNALVERBOSE = verbose$1.createInternalInstance();
-FWINTERNALVERBOSE.enabled = !production;
 function findStateDeep(o) {
     let res = [];
     const keys = Object.keys(o);
@@ -308,6 +307,65 @@ function findStateDeep(o) {
     }
     return res;
 }
+
+const hooks = new Map();
+function getHooks(target) {
+    return hooks.get(target).hooks;
+}
+function registerHook(target, callback) {
+    if (callback) {
+        hooks.set(target, { hooks: [] });
+    }
+    else {
+        hooks.set(target, { hooks: [] });
+    }
+}
+function executeHook(target, data) {
+    const hook = hooks.get(target);
+    hook.hooks.forEach(hookcb => {
+        hookcb(data);
+    });
+}
+function subscribeToHook(target, callback) {
+    const hook = hooks.get(target);
+    if (hook) {
+        hook.hooks.push(callback);
+    }
+    else {
+        throw new Error("unable to subscribe to hook, hook '" + target + "' does not exist");
+    }
+}
+
+const isRef = Symbol("is-ref");
+class Ref {
+    constructor() {
+        this._onupdatecbs = [];
+    }
+    get dom() {
+        return this._element._element;
+    }
+    get virtual() {
+        return this._element;
+    }
+    setRef(new_item) {
+        this._element = new_item;
+        if (this._element._element)
+            this._onupdatecbs.forEach(updatedcb => updatedcb(this));
+    }
+    watch(cb) {
+        this._onupdatecbs.push(cb);
+        return () => {
+            this._onupdatecbs.splice(this._onupdatecbs.indexOf(cb), 1);
+        };
+    }
+    get [isRef]() { return true; }
+}
+
+registerHook('domrenderstart', false);
+registerHook('domrenderend', false);
+registerHook('vdomcreate', false);
+const FWINTERNALVERBOSE = verbose$1.createInternalInstance();
+FWINTERNALVERBOSE.enabled = !production;
 function deferAssignment(object, props) {
     const keys = Object.keys(props);
     for (let i = 0; i < keys.length; i++) {
@@ -397,6 +455,7 @@ class VElement {
         return value;
     }
     render(isSvg) {
+        executeHook('domrenderstart', this);
         isSvg = this.setIsSvg(isSvg || this.isSvg);
         if (isSvg) {
             this._element = document.createElementNS('http://www.w3.org/2000/svg', this.type);
@@ -451,31 +510,36 @@ class VElement {
         }
         for (let i = 0; i < keys.length; i++) {
             const key = keys[i];
-            if (this.props[key] && this.props[key][isState]) {
-                this._element[key] = this.props[key].value;
-            }
-            else if (typeof this.props[key] == 'object') {
-                if (key != 'children')
-                    deferAssignment(this._element[key], this.props[key]);
-            }
-            else {
-                try {
-                    if (key.substr(0, 2) == 'on') {
-                        this._element.addEventListener(key.substr(2), this.props[key]);
-                    }
-                    else {
-                        this._element[key] = this.props[key];
-                        if (isSvg)
-                            this._element.setAttribute(key, this.props[key]);
-                    }
+            if (key != "ref") {
+                if (this.props[key] && this.props[key][isState]) {
+                    this._element[key] = this.props[key].value;
                 }
-                catch (e) {
-                    this._element.setAttribute(key, this.props[key]);
+                else if (typeof this.props[key] == 'object') {
+                    if (key != 'children')
+                        deferAssignment(this._element[key], this.props[key]);
+                }
+                else {
+                    try {
+                        if (key.substr(0, 2) == 'on') {
+                            this._element.addEventListener(key.substr(2), this.props[key]);
+                        }
+                        else {
+                            this._element[key] = this.props[key];
+                            if (isSvg)
+                                this._element.setAttribute(key, this.props[key]);
+                        }
+                    }
+                    catch (e) {
+                        this._element.setAttribute(key, this.props[key]);
+                    }
                 }
             }
         }
         for (let i = 0; i < this.states.length; i++) {
             this.states[i].addRelient(this);
+        }
+        if (this.props.ref && this.props.ref[isRef]) {
+            this.props.ref.setRef(this);
         }
     }
     setRelientStateDirty(state) {
@@ -505,6 +569,7 @@ class VElement {
                 }
             }
         }
+        executeHook('domrenderend', this);
     }
     static resolve(value) {
         if (value instanceof VElement) {
@@ -537,6 +602,9 @@ class VElement {
         return true;
     }
     diff(other) {
+        if (typeof other === 'undefined') {
+            return this.element().parentElement.removeChild(this.element());
+        }
         if (!deq(this.props, other.props)) {
             const keys = Object.keys(this.props);
             const okeys = Object.keys(other.props);
@@ -614,14 +682,20 @@ function deq(x, y) {
     return true;
 }
 function dom(node_type, props, ...children) {
+    let res = null;
     if (typeof node_type === 'function') {
         if (Object.getPrototypeOf(node_type) === Component) {
-            return new node_type(Object.assign(Object.assign({}, props || {}), { children }));
+            res = new node_type(Object.assign(Object.assign({}, props || {}), { children }));
         }
-        const res = node_type(Object.assign(Object.assign({}, props || {}), { children }));
-        return res;
+        else {
+            res = node_type(Object.assign(Object.assign({}, props || {}), { children }));
+        }
     }
-    return new VElement(node_type, props, children);
+    else {
+        res = new VElement(node_type, props, children);
+    }
+    executeHook('vdomcreate', res);
+    return res;
 }
 
 const style = document.createElement("style");
@@ -656,7 +730,9 @@ var fw = {
     stateJoin,
     css,
     Component,
-    verbose: verbose$1
+    verbose: verbose$1,
+    Ref
 };
 
 export default fw;
+export { Component, OStatefulData, Ref, StatefulData, VChildRegion, VElement, css, dom, executeHook, findStateDeep, getHooks, isComponentConstructor, isState, production, registerHook, stateJoin, subscribeToHook };

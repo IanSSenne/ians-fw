@@ -10,6 +10,7 @@
         "express": "^4.17.1",
         "fs": "0.0.1-security",
         "path": "^0.12.7",
+        "resolve": "^1.13.1",
         "rollup": "^1.21.4",
         "rollup-plugin-babel": "^4.3.3",
         "rollup-plugin-babel-minify": "^9.1.0",

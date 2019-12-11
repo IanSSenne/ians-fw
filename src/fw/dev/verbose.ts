@@ -2,9 +2,27 @@ const instances = [];
 class verboseConstructor {
 	_enabled: boolean;
 	funcs: { log: Function; error: Function; warn: Function } = {
-		log: console.log.bind(console, '[fw2gulp LOG]'),
-		error: console.error.bind(console, '[fw2gulp ERR]'),
-		warn: console.warn.bind(console, '[fw2gulp WRN]')
+		log: console.log.bind(
+			console,
+			`%c ians-fw %c log %c `,
+			'background:#35495e ; padding: 1px; border-radius: 3px 0 0 3px;  color: #fff',
+			`background: gray; padding: 1px; border-radius: 0 3px 3px 0;  color: #fff`,
+			'background:transparent'
+		),
+		error: console.log.bind(
+			console,
+			`%c ians-fw %c error %c `,
+			'background:#35495e ; padding: 1px; border-radius: 3px 0 0 3px;  color: #fff',
+			`background: rgb(190, 0, 0); padding: 1px; border-radius: 0 3px 3px 0;  color: #fff`,
+			'background:transparent'
+		),
+		warn: console.log.bind(
+			console,
+			`%c ians-fw %c warn %c `,
+			'background:#35495e ; padding: 1px; border-radius: 3px 0 0 3px;  color: #fff',
+			`background: rgb(207, 162, 0); padding: 1px; border-radius: 0 3px 3px 0;  color: #fff`,
+			'background:transparent'
+		)
 	};
 	constructor() {
 		this._enabled = false;
@@ -31,9 +49,29 @@ class verboseConstructor {
 	}
 	createInstance(type) {
 		let vc = new verboseConstructor();
-		vc.funcs.log = console.log.bind(console, `[${type}LOG]`);
-		vc.funcs.error = console.error.bind(console, `[${type}ERR]`);
-		vc.funcs.warn = console.warn.bind(console, `[${type}WRN]`);
+		vc.funcs = {
+			log: console.log.bind(
+				console,
+				`%c ${type} %c log %c `,
+				'background:#35495e ; padding: 1px; border-radius: 3px 0 0 3px;  color: #fff',
+				`background: gray; padding: 1px; border-radius: 0 3px 3px 0;  color: #fff`,
+				'background:transparent'
+			),
+			error: console.log.bind(
+				console,
+				`%c ${type} %c error %c `,
+				'background:#35495e ; padding: 1px; border-radius: 3px 0 0 3px;  color: #fff',
+				`background: rgb(190, 0, 0); padding: 1px; border-radius: 0 3px 3px 0;  color: #fff`,
+				'background:transparent'
+			),
+			warn: console.log.bind(
+				console,
+				`%c ${type} %c warn %c `,
+				'background:#35495e ; padding: 1px; border-radius: 3px 0 0 3px;  color: #fff',
+				`background: rgb(207, 162, 0); padding: 1px; border-radius: 0 3px 3px 0;  color: #fff`,
+				'background:transparent'
+			)
+		};
 		return vc;
 	}
 }

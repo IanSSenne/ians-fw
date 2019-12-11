@@ -1,10 +1,8 @@
 var requestIdleCallback;
 
 if (!requestIdleCallback) requestIdleCallback = requestAnimationFrame;
-import Symbol from './ie_Symbol';
+import $Symbol from './ie_Symbol';
 import { isState } from './state';
-import verbose from './verbose';
-const INTERNALVERBOSE = verbose.createInternalInstance();
 const rerender_queue = [];
 declare var requestIdleCallback;
 const rerenderCallbackOptions = { timeout: 500 };
@@ -21,7 +19,7 @@ function rerenderHandler() {
 	// rerenderCallbackHandler(rerenderHandler, rerenderCallbackOptions);
 }
 // rerenderCallbackHandler(rerenderHandler, rerenderCallbackOptions);
-export const isComponentConstructor: string = Symbol();
+export const isComponentConstructor: string = $Symbol();
 export class Component {
 	public props: any;
 	public children: any[];

@@ -2,27 +2,17 @@ import { isState } from './state';
 import { isComponentConstructor, Component } from './component';
 import verbose from './verbose';
 import { production } from './prod';
-// const svgElements = 'animate,animateMotion,animateTransform,circle,clipPath,color-profile,defs,desc,discard,ellipse,feBlend,feColorMatrix,feComponentTransfer,feComposite,feConvolveMatrix,feDiffuseLighting,feDisplacementMap,feDistantLight,feDropShadow,feFlood,feFuncA,feFuncB,feFuncG,feFuncR,feGaussianBlur,feImage,feMerge,feMergeNode,feMorphology,feOffset,fePointLight,feSpecularLighting,feSpotLight,feTile,feTurbulence,filter,foreignObject,g,hatch,hatchpath,image,line,linearGradient,marker,mask,mesh,meshgradient,meshpatch,meshrow,metadata,mpath,path,pattern,polygon,polyline,radialGradient,rect,script,set,solidcolor,stop,style,svg,switch,symbol,text,textPath,title,tspan,unknown,use,view,animate,animateColor,animateMotion,animateTransform,discard,mpath,set,circle,ellipse,line,polygon,polyline,rect,defs,g,marker,mask,missing-glyph,pattern,svg,switch,symbol,unknown,desc,metadata,title,feBlend,feColorMatrix,feComponentTransfer,feComposite,feConvolveMatrix,feDiffuseLighting,feDisplacementMap,feDropShadow,feFlood,feFuncA,feFuncB,feFuncG,feFuncR,feGaussianBlur,feImage,feMerge,feMergeNode,feMorphology,feOffset,feSpecularLighting,feTile,feTurbulence,font,font-face,font-face-format,font-face-name,font-face-src,font-face-uri,hkern,vkern,linearGradient,meshgradient,radialGradient,stop,circle,ellipse,image,line,mesh,path,polygon,polyline,rect,text,use,mesh,use,feDistantLight,fePointLight,feSpotLight,clipPath,defs,hatch,linearGradient,marker,mask,meshgradient,metadata,pattern,radialGradient,script,style,symbol,title,hatch,linearGradient,meshgradient,pattern,radialGradient,solidcolor,circle,ellipse,foreignObject,g,image,line,mesh,path,polygon,polyline,rect,svg,switch,symbol,text,textPath,tspan,unknown,use,circle,ellipse,line,mesh,path,polygon,polyline,rect,defs,g,svg,symbol,use,altGlyph,altGlyphDef,altGlyphItem,glyph,glyphRef,textPath,text,tref,tspan,altGlyph,textPath,tref,tspan,clipPath,color-profile,cursor,filter,foreignObject,hatchpath,meshpatch,meshrow,script,style,view,altGlyph,altGlyphDef,altGlyphItem,animateColor,cursor,font,font-face,font-face-format,font-face-name,font-face-src,font-face-uri,glyph,glyphRef,hkern,missing-glyph,tref,vkern,altGlyph,altGlyphDef,altGlyphItem,animate,animateColor,animateMotion,animateTransform,circle,clipPath,color-profile,cursor,defs,desc,ellipse,feBlend,feColorMatrix,feComponentTransfer,feComposite,feConvolveMatrix,feDiffuseLighting,feDisplacementMap,feDistantLight,feFlood,feFuncA,feFuncB,feFuncG,feFuncR,feGaussianBlur,feImage,feMerge,feMergeNode,feMorphology,feOffset,fePointLight,feSpecularLighting,feSpotLight,feTile,feTurbulence,filter,font,font-face,font-face-format,font-face-name,font-face-src,font-face-uri,foreignObject,g,glyph,glyphRef,hkern,image,line,linearGradient,marker,mask,metadata,missing-glyph,mpath,path,pattern,polygon,polyline,radialGradient,rect,script,set,stop,style,svg,switch,symbol,text,textPath,title,tref,tspan,use,view,vkern'.split(
-// 	','
-// );
+import { findStateDeep } from './util';
+import { registerHook, executeHook } from './hooks';
+import { isRef } from "./ref";
+registerHook('domrenderstart', false);
+registerHook('domrenderend', false);
+registerHook('vdomcreate', false);
 interface PropsObject {
 	[key: string]: any;
 }
 const FWINTERNALVERBOSE = verbose.createInternalInstance();
 FWINTERNALVERBOSE.enabled = !production;
-function findStateDeep(o: any): any[] {
-	let res = [];
-	const keys = Object.keys(o);
-	for (let i = 0; i < keys.length; i++) {
-		const key = keys[i];
-		if (o[key] && o[key][isState]) {
-			res.push(o[key]);
-		} else if (typeof o[key] === 'object') {
-			res.push(...findStateDeep(o[key]));
-		}
-	}
-	return res;
-}
 function deferAssignment(object: object, props: object) {
 	const keys = Object.keys(props);
 	for (let i = 0; i < keys.length; i++) {
@@ -117,6 +107,7 @@ export class VElement {
 		return value;
 	}
 	render(isSvg) {
+		executeHook('domrenderstart', this);
 		isSvg = this.setIsSvg(isSvg || this.isSvg);
 		if (isSvg) {
 			this._element = document.createElementNS('http://www.w3.org/2000/svg', this.type);
@@ -167,25 +158,30 @@ export class VElement {
 		}
 		for (let i = 0; i < keys.length; i++) {
 			const key: string = keys[i];
-			if (this.props[key] && this.props[key][isState]) {
-				this._element[key] = this.props[key].value;
-			} else if (typeof this.props[key] == 'object') {
-				if (key != 'children') deferAssignment(this._element[key], this.props[key]);
-			} else {
-				try {
-					if (key.substr(0, 2) == 'on') {
-						this._element.addEventListener(key.substr(2), this.props[key]);
-					} else {
-						this._element[key] = this.props[key];
-						if (isSvg) this._element.setAttribute(key, this.props[key]);
+			if (key != "ref") {
+				if (this.props[key] && this.props[key][isState]) {
+					this._element[key] = this.props[key].value;
+				} else if (typeof this.props[key] == 'object') {
+					if (key != 'children') deferAssignment(this._element[key], this.props[key]);
+				} else {
+					try {
+						if (key.substr(0, 2) == 'on') {
+							this._element.addEventListener(key.substr(2), this.props[key]);
+						} else {
+							this._element[key] = this.props[key];
+							if (isSvg) this._element.setAttribute(key, this.props[key]);
+						}
+					} catch (e) {
+						this._element.setAttribute(key, this.props[key]);
 					}
-				} catch (e) {
-					this._element.setAttribute(key, this.props[key]);
 				}
 			}
 		}
 		for (let i = 0; i < this.states.length; i++) {
 			this.states[i].addRelient(this);
+		}
+		if (this.props.ref && this.props.ref[isRef]) {
+			this.props.ref.setRef(this);
 		}
 	}
 	setRelientStateDirty(state: any) {
@@ -211,6 +207,7 @@ export class VElement {
 				}
 			}
 		}
+		executeHook('domrenderend', this);
 	}
 	static resolve(value: any) {
 		if (value instanceof VElement) {
@@ -240,6 +237,9 @@ export class VElement {
 	}
 
 	diff(other: VElement) {
+		if (typeof other === 'undefined') {
+			return this.element().parentElement.removeChild(this.element());
+		}
 		// console.log(this, other);
 		if (!deq(this.props, other.props)) {
 			const keys = Object.keys(this.props);
@@ -329,14 +329,19 @@ export function dom<A extends Component>(
 	props: null | PropsObject,
 	...children: any[]
 ) {
+	let res = null;
 	if (typeof node_type === 'function') {
 		if (Object.getPrototypeOf(node_type) === Component) {
-			return new (node_type as any)({ ...props || {}, children });
+			res = new (node_type as any)({ ...props || {}, children });
+		} else {
+			res = node_type({ ...props || {}, children });
 		}
-		const res = node_type({ ...props || {}, children });
 		// res._element.setAttribute('fw-comp-root', node_type.name);
 		// res._element.setAttribute('fw-comp-type', 'func');
-		return res;
+	} else {
+		res = new VElement(node_type as string, props, children);
 	}
-	return new VElement(node_type as string, props, children);
+
+	executeHook('vdomcreate', res);
+	return res;
 }
