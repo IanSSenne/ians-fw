@@ -62,9 +62,9 @@ if (!Array.prototype.fill)
         }
     });
 
-if (!Symbol$1) {
+if (!Symbol) {
     var CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0987654321!@#$%^&*()';
-    var Symbol$1 = function (desc) {
+    var Symbol = function (desc) {
         let arr = [];
         for (let i = 0; i < 128; i++) {
             arr.push(CHARS[Math.floor(Math.random() * CHARS.length)]);
@@ -73,10 +73,10 @@ if (!Symbol$1) {
     };
 }
 function $Symbol(description) {
-    return Symbol$1(description);
+    return Symbol(description);
 }
 $Symbol.$Symbol = function () {
-    return Symbol$1;
+    return Symbol;
 }.bind(window)();
 
 const isState = $Symbol();
@@ -293,12 +293,38 @@ Object.defineProperty(window || globalThis || new Function('this')(), 'FW2VERBOS
 
 const production = false;
 
+const isRef = $Symbol("is-ref");
+class Ref {
+    constructor() {
+        this._onupdatecbs = [];
+    }
+    get dom() {
+        return this._element._element;
+    }
+    get virtual() {
+        return this._element;
+    }
+    setRef(new_item) {
+        this._element = new_item;
+        if (this._element._element)
+            this._onupdatecbs.forEach(updatedcb => updatedcb(this));
+    }
+    watch(cb) {
+        this._onupdatecbs.push(cb);
+        return () => {
+            this._onupdatecbs.splice(this._onupdatecbs.indexOf(cb), 1);
+        };
+    }
+    get [isRef]() { return true; }
+}
+
 function findStateDeep(o) {
     let res = [];
     const keys = Object.keys(o);
     for (let i = 0; i < keys.length; i++) {
         const key = keys[i];
-        if (o[key] && o[key][isState]) {
+        if (o[key] && o[key][isRef]) ;
+        else if (o[key] && o[key][isState]) {
             res.push(o[key]);
         }
         else if (typeof o[key] === 'object') {
@@ -334,31 +360,6 @@ function subscribeToHook(target, callback) {
     else {
         throw new Error("unable to subscribe to hook, hook '" + target + "' does not exist");
     }
-}
-
-const isRef = Symbol("is-ref");
-class Ref {
-    constructor() {
-        this._onupdatecbs = [];
-    }
-    get dom() {
-        return this._element._element;
-    }
-    get virtual() {
-        return this._element;
-    }
-    setRef(new_item) {
-        this._element = new_item;
-        if (this._element._element)
-            this._onupdatecbs.forEach(updatedcb => updatedcb(this));
-    }
-    watch(cb) {
-        this._onupdatecbs.push(cb);
-        return () => {
-            this._onupdatecbs.splice(this._onupdatecbs.indexOf(cb), 1);
-        };
-    }
-    get [isRef]() { return true; }
 }
 
 registerHook('domrenderstart', false);
@@ -735,4 +736,4 @@ var fw = {
 };
 
 export default fw;
-export { Component, OStatefulData, Ref, StatefulData, VChildRegion, VElement, css, dom, executeHook, findStateDeep, getHooks, isComponentConstructor, isState, production, registerHook, stateJoin, subscribeToHook };
+export { Component, OStatefulData, Ref, StatefulData, VChildRegion, VElement, css, dom, executeHook, findStateDeep, getHooks, isComponentConstructor, isRef, isState, production, registerHook, stateJoin, subscribeToHook };

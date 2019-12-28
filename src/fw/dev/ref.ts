@@ -1,6 +1,6 @@
 import { VElement } from "./dom";
-
-export const isRef: unique symbol = Symbol("is-ref");
+import IESymbol from "./ie_Symbol";
+export const isRef: string = IESymbol("is-ref");
 export class Ref {
     _element: VElement | null;
     _onupdatecbs: any[] = [];

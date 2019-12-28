@@ -1,6 +1,6 @@
 {
     "name": "ians-fw",
-    "version": "1.1.7",
+    "version": "1.4.3",
     "description": "ians-fw, my best attempt at creating a custom web framework",
     "main": "build/index.js",
     "module": "build/index.js",
